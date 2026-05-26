@@ -1,2 +1,5 @@
-
 streamlit
+langchain
+langsmith
+langchain-google-genai
+python-dotenv

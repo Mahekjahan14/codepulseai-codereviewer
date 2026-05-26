@@ -1,4 +1,11 @@
 import streamlit as st
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 from utils.reviewer import (
     analyze_code,
     generate_badges,
@@ -264,6 +271,12 @@ code = st.text_area(
     key="code_input"
 )
 
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.3
+)
+
+
 # ---------------- ANALYSIS ---------------- #
 
 cleaned = sanitize_code(code)
@@ -407,6 +420,31 @@ Tips:
                     report,
                     filename="codepulse_report.txt"
                 )
+
+                ai_prompt = f"""
+Review this {language} code professionally.
+
+Code:
+{cleaned}
+
+Give:
+1. Bugs
+2. Improvements
+3. Optimization tips
+4. Security concerns
+"""
+
+                st.markdown("## 🤖 AI Review")
+                try:
+                    response = llm.invoke(ai_prompt)
+                    st.write(response.content)
+                except Exception as e:
+                    st.error("### ⚠️ AI Review Failed")
+                    st.warning(
+                        "Please check if your `GOOGLE_API_KEY` is correctly configured in your `.env` file. "
+                        "Make sure there are no placeholder values (like `your_google_api_key`).\n\n"
+                        f"**Error Details:** {str(e)}"
+                    )
 
             else:
 
